@@ -1,2 +1,1 @@
-# QD-GNN
-For Peer-Review Only
+# Codes-for-Peer-Review-of-VLDB-August-337
