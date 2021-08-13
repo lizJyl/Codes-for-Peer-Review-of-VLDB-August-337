@@ -1,9 +1,0 @@
-{
-    "Token":"xUiMpkJX0lyXWAQJ-IbLNQ",
-    "business_flag": "DrugAI_CQ",
-    "model_local_file_path": "/apdcephfs/private_lizyljiang/CommunitySearch/data/FB_code/ComSplit",
-    "host_num": 1,
-    "host_gpu_num": 1,
-    "image_full_name": "mirrors.tencent.com/drug_ai/g-tlinux2.2-python3.6-cuda10.0-cudnn7.6-tf2.0-openmpi4.0.3-nccl2.5.6-ofed4.6-horovod-rdkit2019.03.3.0-pytorch1.1:v0.3.0",
-    "is_elasticity": true
-}
