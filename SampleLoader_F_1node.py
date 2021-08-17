@@ -22,6 +22,7 @@ class GraphDataset(Dataset):
         super(GraphDataset, self).__init__()
 
         data_dir='./data/facebook/'
+	data_dir='./data/'
 
         graph_name = [ego]
         feats = {}
