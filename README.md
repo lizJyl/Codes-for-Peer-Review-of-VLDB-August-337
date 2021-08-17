@@ -3,10 +3,10 @@
 ## Prerequisites
 
 - Python 3.6
-- NVIDIA GPU
+- NVIDIA GPU V100
 - Ubuntu
 - PyTorch 1.8
-- CUDa 10.1
+- CUDA 10.1
 
 ## Run
 ``` 
