@@ -17,7 +17,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 # from torch.utils.data.dataset import Dataset
 from torch.utils.data import DataLoader
-from GFCN import QD_GCN
+from GFCN import QD_GCN,CS_GCN,SimpleCS_GCN,CS_GCN_NoF
 # from pygcn import GFCN, GCNAtt, GCNAtt_my,ResDeepGCN,DenseDeepGCN,GCN_BN,ResDeepGCN_BN8,\
 #     ResDeepGCN_BN16, DenseDeepGCN_BN16, ResDeepGCN_BN16_ATN,ResGCN_BN,Self_ResGCN_BN,ResGCN_BN_ADD,ResGCN_BN_Update
 from earlystopping import EarlyStopping
@@ -54,64 +54,42 @@ def main(args):
 
     args.cuda = not args.no_cuda and torch.cuda.is_available()
 
-    # data = get_data(phase='train')
-    # train_norm, n_classes, non_dominated, nondomin_dict, graph, G = build_dataset(input_folder, k)
-    # n_node = graph.number_of_nodes()
-    # extra_feats, n_feats = generate_features(core = graph, n_node = n_node)
-    # nfeat = 1 + n_feats if ef > 0 else 1
-    # dataset = SampleDataset(n_classes = args.n_classes, n_node = graph.number_of_nodes(),
-    # 						non_dominated = non_dominated, X_norm = train_norm,
-    # 						extra_feats = extra_feats, ef = ef,
-    # 						G = G, set_size = set_size,
-    # 						k = k, batch_size = batch_size)
-    # #
-
-    ego = int(args.data_set)
-    max_dim = args.dim
-
-    # ego = 414
-    # max_dim = 105  # +1+1#+1+1#+1
-
-    # ego = 686
-    # max_dim = 63
-
-    # ego = 348
-    # max_dim = 161
-    # # #
-    # ego = 0
-    # max_dim = 224
-    # # # #
-    # ego = 3437
-    # max_dim = 262
-    #
-    # ego = 1912
-    # max_dim = 480
-    #
-    # ego = 1684
-    # max_dim = 319
-    # # # # #
-    # ego = 107
-    # max_dim = 576
-
     lossCE = True
     # lossCE=False // IoU loss
     # method = "ACC_QfN"
     method = "ATC"
     # method = "ATC_QfN"
     # method="QD-GCN"
-    # method="multinode"
-    # # method = "onenode"
+    #method="multinode"
+#     method = "onenode"
 
+    ##################################       FaceBook
+    ego = int(args.data_set)
     trainloader = DataLoader(GraphDataset(phase='train',ego=ego,method=method),
-                             batch_size=batch_size, shuffle=True, sampler=None)
+                            batch_size=batch_size, shuffle=True, sampler=None)
 
     evalloader = DataLoader(GraphDataset(phase='eval',ego=ego,method=method),
-                            batch_size=1, shuffle=False, sampler=None)
+                           batch_size=1, shuffle=False, sampler=None)
 
     testloader = DataLoader(GraphDataset(phase='test',ego=ego,method=method),
-                            batch_size=1, shuffle=False, sampler=None)
+                           batch_size=1, shuffle=False, sampler=None)
+
+    ##########################################        Citation
+#     trainloader = DataLoader(WebKBDataset(phase='train',file=args.data_set,method=method),
+#                              batch_size=batch_size, shuffle=True, sampler=None)
+
+#     evalloader = DataLoader(WebKBDataset(phase='eval',file=args.data_set,method=method),
+#                             batch_size=1, shuffle=False, sampler=None)
+
+#     testloader = DataLoader(WebKBDataset(phase='test',file=args.data_set,method=method),
+#                             batch_size=1, shuffle=False, sampler=None)
 
     # assert 1<0, (len(trainloader), len(evalloader), len(testloader))
+
+    for i_iter, batch in enumerate(trainloader):
+        input,attr, adj,feat, label ,Adj = batch
+        max_dim=feat.shape[2]
+        break
 
     model = QD_GCN(nfeat = max_dim, nhid = n_hid1, nclass= args.n_classes, dropout = dropout)
     print("QD_GCN")
@@ -418,8 +396,8 @@ def _test(model, testloader,best_thr):
         output,xsave = model.forward(input,attr, adj,feat,feat, training=False)
         output = output.cpu()
         test2 = time.time()
-        totaltime=test2-test1
-
+        totaltime=totaltime+test2-test1
+        print("test time, test num",test2-test1)
         all_output = all_output + (output).view(-1).detach().numpy().tolist()
         all_label = all_label + (label).view(-1).detach().numpy().tolist()
 
@@ -500,7 +478,7 @@ def _test(model, testloader,best_thr):
 
         count=count+1
 
-
+   
     print("varance size, dense, cos", np.var(var_size), np.var(var_dens), np.var(var_cos))
     print('average cos similarity in output,ground-truth', all_cos / count,all_cos_lab/count)
     print('average nodes in output, nodes in ground-truth ', out_size/count,lab_size/count)
@@ -530,7 +508,7 @@ def _test(model, testloader,best_thr):
     # 		# 	# 'loss': loss.item()
     # 		# }, tem_dir)
 
-
+    print("test time, avg time",totaltime, 1000*totaltime/len(testloader))
     precision, recall, f1_score = calc_f1_score_iouthr(all_output, all_label,best_thr)
 
     return precision, recall, f1_score
@@ -629,3 +607,4 @@ if __name__ == "__main__":
     if args.verbose:
         print(args)
     main(args)
+
