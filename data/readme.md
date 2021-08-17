@@ -1,1 +1,1 @@
-# data with query generation code
+# data with queries
